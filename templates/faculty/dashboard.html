@@ -1,0 +1,231 @@
+<!-- templates/faculty/dashboard.html -->
+{% extends 'base.html' %}
+
+{% block title %}Faculty Dashboard - Knowledge Sharing System{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3 col-lg-2 d-md-block sidebar collapse">
+            <div class="list-group">
+                <a href="{{ url_for('faculty_dashboard') }}" class="list-group-item list-group-item-action active">
+                    <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                </a>
+                <a href="{{ url_for('upload_resource') }}" class="list-group-item list-group-item-action">
+                    <i class="fas fa-upload me-2"></i>Upload Resource
+                </a>
+                <a href="{{ url_for('search') }}" class="list-group-item list-group-item-action">
+                    <i class="fas fa-search me-2"></i>Search
+                </a>
+            </div>
+            
+            <!-- Categories -->
+            <div class="mt-4">
+                <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+                    <span>Categories</span>
+                </h6>
+                <div class="list-group">
+                    {% set categories = ['Books', 'Notes', 'Presentations', 'Research Papers', 'Tutorials', 'Other'] %}
+                    {% for category in categories %}
+                    <a href="{{ url_for('search') }}?q={{ category }}" class="list-group-item list-group-item-action">
+                        {{ category }}
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Faculty Dashboard</h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <div class="btn-group me-2">
+                        <a href="{{ url_for('upload_resource') }}" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-upload me-1"></i>Upload Resource
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recently Uploaded Resources (Newly Added Section) -->
+            <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Recently Uploaded Resources</h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_uploads %}
+                    <div class="row row-cols-1 row-cols-md-3 g-4">
+                        {% for resource in recent_uploads %}
+                        <div class="col">
+                            <div class="card h-100 resource-card">
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ resource.title }}</h5>
+                                    <h6 class="card-subtitle mb-2 text-muted">{{ resource.category }}</h6>
+                                    <p class="card-text">{{ resource.description|truncate(100) }}</p>
+                                    <div class="rating mb-2">
+                                        {% set avg_rating = resource.avg_rating() %}
+                                        {% for i in range(5) %}
+                                            {% if i < avg_rating|int %}
+                                            <i class="fas fa-star"></i>
+                                            {% elif i < avg_rating|round(0, 'ceil') and (avg_rating % 1) > 0 %}
+                                            <i class="fas fa-star-half-alt"></i>
+                                            {% else %}
+                                            <i class="far fa-star"></i>
+                                            {% endif %}
+                                        {% endfor %}
+                                        <small class="text-muted">({{ resource.reviews|length }})</small>
+                                    </div>
+                                </div>
+                                <div class="card-footer bg-transparent">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <small class="text-muted">Uploaded by {{ resource.uploader.username }}</small>
+                                        <a href="{{ url_for('view_resource', resource_id=resource.id) }}" class="btn btn-sm btn-primary">View</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info mb-0">
+                        <i class="fas fa-info-circle me-2"></i>No recent uploads available.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Upload Stats -->
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="card text-white bg-primary">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="card-title">Total Uploads</h6>
+                                    <h2 class="mb-0">{{ resources|length }}</h2>
+                                </div>
+                                <i class="fas fa-file-upload fa-3x opacity-50"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card text-white bg-success">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="card-title">Approved</h6>
+                                    <h2 class="mb-0">{{ resources|selectattr('status', 'equalto', 'approved')|list|length }}</h2>
+                                </div>
+                                <i class="fas fa-check-circle fa-3x opacity-50"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card text-white bg-warning">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="card-title">Pending</h6>
+                                    <h2 class="mb-0">{{ resources|selectattr('status', 'equalto', 'pending')|list|length }}</h2>
+                                </div>
+                                <i class="fas fa-clock fa-3x opacity-50"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- My Resources -->
+            <div class="card">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">My Resources</h5>
+                    <a href="{{ url_for('upload_resource') }}" class="btn btn-sm btn-primary">
+                        <i class="fas fa-plus me-1"></i>Add New
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if resources %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Category</th>
+                                    <th>Status</th>
+                                    <th>Rating</th>
+                                    <th>Reviews</th>
+                                    <th>Upload Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for resource in resources %}
+                                <tr>
+                                    <td>
+                                        <a href="{{ url_for('view_resource', resource_id=resource.id) }}">
+                                            {{ resource.title }}
+                                        </a>
+                                    </td>
+                                    <td>{{ resource.category }}</td>
+                                    <td>
+                                        {% if resource.status == 'pending' %}
+                                        <span class="badge bg-warning">Pending</span>
+                                        {% elif resource.status == 'approved' %}
+                                        <span class="badge bg-success">Approved</span>
+                                        {% else %}
+                                        <span class="badge bg-danger">Rejected</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="rating">
+                                            {% set avg_rating = resource.avg_rating() %}
+                                            {% for i in range(5) %}
+                                                {% if i < avg_rating|int %}
+                                                <i class="fas fa-star"></i>
+                                                {% elif i < avg_rating|round(0, 'ceil') and (avg_rating % 1) > 0 %}
+                                                <i class="fas fa-star-half-alt"></i>
+                                                {% else %}
+                                                <i class="far fa-star"></i>
+                                                {% endif %}
+                                            {% endfor %}
+                                            <small class="text-muted">({{ resource.avg_rating()|round(1) }})</small>
+                                        </div>
+                                    </td>
+                                    <td>{{ resource.reviews|length }}</td>
+                                    <td>{{ resource.upload_date.strftime('%Y-%m-%d') }}</td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <a href="{{ url_for('view_resource', resource_id=resource.id) }}" class="btn btn-sm btn-info">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a href="{{ url_for('edit_resource', resource_id=resource.id) }}" class="btn btn-sm btn-warning">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <a href="{{ url_for('delete_resource', resource_id=resource.id) }}" class="btn btn-sm btn-danger" 
+                                               onclick="return confirm('Are you sure you want to delete this resource?')">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info mb-0">
+                        <i class="fas fa-info-circle me-2"></i>You haven't uploaded any resources yet. 
+                        <a href="{{ url_for('upload_resource') }}" class="alert-link">Upload your first resource</a>..
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+        </main>
+    </div>
+</div>
+{% endblock %}

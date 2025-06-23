@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 text-center">
+            <h1 class="display-4 mb-4">Welcome to Knowledge Sharing System</h1>
+            <p class="lead mb-5">A platform for students and faculty to share and access educational resources.</p>
+            
+            {% if not current_user.is_authenticated %}
+            <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                <a href="{{ url_for('login') }}" class="btn btn-primary btn-lg px-4 me-md-2">Login</a>
+                <a href="{{ url_for('register') }}" class="btn btn-outline-primary btn-lg px-4">Register</a>
+            </div>
+            {% else %}
+            <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                <a href="{{ url_for('dashboard') }}" class="btn btn-primary btn-lg px-4 me-md-2">Go to Dashboard</a>
+                <a href="{{ url_for('upload_resource') }}" class="btn btn-outline-primary btn-lg px-4">Upload Resource</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="row mt-5">
+        <div class="col-md-4">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <i class="fas fa-search fa-4x text-primary mb-3"></i>
+                    <h3 class="card-title">Search Resources</h3>
+                    <p class="card-text">Find educational materials, notes, and books using our powerful search system.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <i class="fas fa-upload fa-4x text-primary mb-3"></i>
+                    <h3 class="card-title">Share Knowledge</h3>
+                    <p class="card-text">Upload your own materials and share them with the community.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <i class="fas fa-star fa-4x text-primary mb-3"></i>
+                    <h3 class="card-title">Rate & Review</h3>
+                    <p class="card-text">Rate and provide feedback on resources to help others find quality content.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

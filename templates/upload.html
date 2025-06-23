@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block title %}Upload Resource - Knowledge Sharing System{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">Upload Resource</h3>
+                </div>
+                <div class="card-body">
+                    <form action="{{ url_for('upload_resource') }}" method="post" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label for="title" class="form-label">Title</label>
+                            <input type="text" class="form-control" id="title" name="title" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="category" class="form-label">Category</label>
+                            <select class="form-select" id="category" name="category" required>
+                                <option value="">Select a category</option>
+                                <option value="Notes">Notes</option>
+                                <option value="Book">Book</option>
+                                <option value="Slides">Slides</option>
+                                <option value="Assignment">Assignment</option>
+                                <option value="Tutorial">Tutorial</option>
+                                <option value="Research Paper">Research Paper</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="4" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="keywords" class="form-label">Keywords (comma separated)</label>
+                            <input type="text" class="form-control" id="keywords" name="keywords" placeholder="e.g. math, calculus, formula">
+                        </div>
+                        <div class="mb-3">
+                            <label for="file" class="form-label">File</label>
+                            <input type="file" class="form-control" id="file" name="file" required>
+                            <div class="form-text">Max file size: 16MB. Supported formats: PDF, DOC, DOCX, PPT, PPTX, TXT, ZIP.</div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i>
+                                {% if current_user.role == 'faculty' %}
+                                As a faculty member, your uploads are automatically approved.
+                                {% else %}
+                                Your upload will be reviewed by an administrator before it's published.
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">Upload Resource</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

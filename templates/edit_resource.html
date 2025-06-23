@@ -1,0 +1,131 @@
+<!-- templates/edit_resource.html -->
+{% extends 'base.html' %}
+
+{% block title %}Edit Resource - Knowledge Sharing System{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('view_resource', resource_id=resource.id) }}">{{ resource.title }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Edit</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="mb-0">Edit Resource</h3>
+                </div>
+                <div class="card-body">
+                    <form action="{{ url_for('edit_resource', resource_id=resource.id) }}" method="post" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label for="title" class="form-label">Title</label>
+                            <input type="text" class="form-control" id="title" name="title" value="{{ resource.title }}" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="4" required>{{ resource.description }}</textarea>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="category" class="form-label">Category</label>
+                                <select class="form-select" id="category" name="category" required>
+                                    <option value="" disabled>Select a category</option>
+                                    <option value="Book" {% if resource.category == 'Book' %}selected{% endif %}>Book</option>
+                                    <option value="Notes" {% if resource.category == 'Notes' %}selected{% endif %}>Notes</option>
+                                    <option value="Presentation" {% if resource.category == 'Presentation' %}selected{% endif %}>Presentation</option>
+                                    <option value="Research Paper" {% if resource.category == 'Research Paper' %}selected{% endif %}>Research Paper</option>
+                                    <option value="Assignment" {% if resource.category == 'Assignment' %}selected{% endif %}>Assignment</option>
+                                    <option value="Tutorial" {% if resource.category == 'Tutorial' %}selected{% endif %}>Tutorial</option>
+                                    <option value="Other" {% if resource.category == 'Other' %}selected{% endif %}>Other</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="keywords" class="form-label">Keywords (comma separated)</label>
+                                <input type="text" class="form-control" id="keywords" name="keywords" value="{{ resource.keywords }}">
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="file" class="form-label">Resource File</label>
+                            <input type="file" class="form-control" id="file" name="file">
+                            <div class="form-text">Current file: {{ resource.file_path.split('/')[-1] }}</div>
+                            <div class="form-text text-muted">Upload a new file only if you want to replace the current one. Supported formats: PDF, DOC, DOCX, PPT, PPTX, XLS, XLSX, TXT, ZIP, RAR.</div>
+                            
+                            {% if current_user.role == 'faculty' or current_user.role == 'student' %}
+                            <div class="alert alert-warning mt-2">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                <strong>Note:</strong> Editing this resource will require admin approval again.
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('view_resource', resource_id=resource.id) }}" class="btn btn-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Resource Status</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span>Current Status:</span>
+                        <span class="badge {% if resource.status == 'approved' %}bg-success{% elif resource.status == 'pending' %}bg-warning{% else %}bg-danger{% endif %}">
+                            {{ resource.status|capitalize }}
+                        </span>
+                    </div>
+                    
+                    {% if resource.status == 'approved' and (current_user.role == 'faculty' or current_user.role == 'student') %}
+                    <div class="alert alert-info mt-3">
+                        <i class="fas fa-info-circle me-2"></i>After editing, this resource will need admin approval again.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            {% if resource.reviews %}
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Resource Ratings</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span>Average Rating:</span>
+                        <div class="rating">
+                            {% set avg_rating = resource.avg_rating() %}
+                            {% for i in range(5) %}
+                                {% if i < avg_rating|int %}
+                                <i class="fas fa-star"></i>
+                                {% elif i < avg_rating|round(0, 'ceil') and (avg_rating % 1) > 0 %}
+                                <i class="fas fa-star-half-alt"></i>
+                                {% else %}
+                                <i class="far fa-star"></i>
+                                {% endif %}
+                            {% endfor %}
+                            <span class="ms-2">{{ avg_rating|round(1) }}</span>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span>Total Reviews:</span>
+                        <span class="badge bg-primary rounded-pill">{{ resource.reviews|length }}</span>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
